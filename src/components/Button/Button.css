@@ -1,0 +1,51 @@
+.btn {
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #0066CC;
+}
+
+.btn-secondary {
+    background-color: #00B4A6;
+}
+
+.btn-success {
+    background-color: #10B981;
+}
+
+.btn-warning {
+    background-color: #F59E0B;
+}
+
+.btn-error {
+    background-color: #EF4444;
+}
+
+.btn-disabled {
+    background-color: #9CA3AF;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-medium {
+    font-size: 16px;
+    padding: 10px 20px;
+}
+
+.btn-large {
+    font-size: 18px;
+    padding: 12px 24px;
+}
+
+.btn-small {
+    font-size: 14px;
+    padding: 8px 16px;
+}

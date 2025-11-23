@@ -1,0 +1,28 @@
+.input-wrapper {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+    color: #374151;
+}
+
+.input-field {
+    display: flex;
+    align-items: center;
+}
+
+.custom-input {
+    padding: 10px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    flex: 1;
+    font-size: 16px;
+}
+
+.input-unit {
+    margin-left: 8px;
+    color: #6B7280;
+}
