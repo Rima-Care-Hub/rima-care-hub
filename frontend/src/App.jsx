@@ -9,6 +9,9 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
+import { useCurrentUser } from './hooks/useCurrentUser';
+import { useShifts } from './hooks/useShifts';
+import { usePatients } from './hooks/usePatients';
 
 const navLinks = [
   { label: 'Dashboard', path: '/dashboard' },
@@ -141,13 +144,39 @@ const Card = ({ title, value, hint }) => (
 );
 
 const DashboardPage = ({ session }) => {
+  const { data: currentUser } = useCurrentUser();
+  const {
+    data: shifts,
+    isLoading: shiftsLoading,
+    error: shiftsError,
+  } = useShifts();
+  const {
+    data: patients,
+    isLoading: patientsLoading,
+    error: patientsError,
+  } = usePatients();
+
   const summary = useMemo(
     () => [
-      { title: 'Active shifts', value: '12', hint: 'Today' },
-      { title: 'Open requests', value: '7', hint: 'Awaiting assignment' },
-      { title: 'Verified staff', value: '148', hint: 'Licensed + vetted' },
+      {
+        title: 'Active shifts',
+        value: shifts ? String(shifts.length) : '—',
+        hint: 'Today (mock)',
+      },
+      {
+        title: 'Open requests',
+        value: shifts
+          ? String(shifts.filter((item) => item.status === 'pending').length)
+          : '—',
+        hint: 'Pending dispatch',
+      },
+      {
+        title: 'Patients',
+        value: patients ? String(patients.length) : '—',
+        hint: 'Monitored',
+      },
     ],
-    []
+    [shifts, patients]
   );
 
   const alerts = [
@@ -155,6 +184,24 @@ const DashboardPage = ({ session }) => {
     'Two caregivers have documents expiring this month.',
     'NIBSS verification is queued for 3 new agencies.',
   ];
+
+  if (shiftsLoading || patientsLoading) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Dashboard</div>
+        <div className="panel-body">Loading data...</div>
+      </div>
+    );
+  }
+
+  if (shiftsError || patientsError) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Dashboard</div>
+        <div className="panel-body">Unable to load data.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="stack">
@@ -177,7 +224,9 @@ const DashboardPage = ({ session }) => {
       <div className="panel">
         <div className="panel-title">Session</div>
         <div className="panel-body">
-          <div className="badge">{session?.user?.email}</div>
+          <div className="badge">
+            {currentUser?.email ?? session?.user?.email}
+          </div>
           <div className="badge subtle">Role: Admin</div>
         </div>
       </div>
@@ -186,17 +235,32 @@ const DashboardPage = ({ session }) => {
 };
 
 const ShiftsPage = () => {
-  const items = [
-    { title: 'Evening shift · Lagos', detail: '4pm - 10pm · RN · Pending dispatch' },
-    { title: 'Overnight · Abuja', detail: '8pm - 6am · CNA · Confirmed' },
-    { title: 'Post-op check · Remote', detail: 'Telehealth · Scheduled' },
-  ];
+  const { data: shifts, isLoading, error } = useShifts();
+
+  if (isLoading) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Shifts</div>
+        <div className="panel-body">Loading shifts...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Shifts</div>
+        <div className="panel-body">Unable to load shifts.</div>
+      </div>
+    );
+  }
+
   return (
     <div className="panel">
       <div className="panel-title">Shifts</div>
       <div className="list">
-        {items.map((item) => (
-          <div key={item.title} className="list-item">
+        {(shifts ?? []).map((item) => (
+          <div key={item.id} className="list-item">
             <div>
               <div className="card-title">{item.title}</div>
               <div className="card-hint">{item.detail}</div>
@@ -210,17 +274,32 @@ const ShiftsPage = () => {
 };
 
 const PatientsPage = () => {
-  const items = [
-    { name: 'Adaeze N.', status: 'Stable · Vitals clean' },
-    { name: 'Michael T.', status: 'Needs wound review' },
-    { name: 'Ngozi K.', status: 'Discharge follow-up in 24h' },
-  ];
+  const { data: patients, isLoading, error } = usePatients();
+
+  if (isLoading) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Patients</div>
+        <div className="panel-body">Loading patients...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="panel">
+        <div className="panel-title">Patients</div>
+        <div className="panel-body">Unable to load patients.</div>
+      </div>
+    );
+  }
+
   return (
     <div className="panel">
       <div className="panel-title">Patients</div>
       <div className="list">
-        {items.map((item) => (
-          <div key={item.name} className="list-item">
+        {(patients ?? []).map((item) => (
+          <div key={item.id} className="list-item">
             <div>
               <div className="card-title">{item.name}</div>
               <div className="card-hint">{item.status}</div>
