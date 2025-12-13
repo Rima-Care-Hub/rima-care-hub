@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       await forgotPassword({ email });
       // Always show success for security (don't reveal if email exists)
       setIsSuccess(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Even on error, show success message for security
       setIsSuccess(true);
     } finally {

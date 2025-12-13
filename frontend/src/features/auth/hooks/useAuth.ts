@@ -1,79 +1,48 @@
-/**
- * useAuth Hook
- * Provides authentication functionality throughout the app
- */
+// src/features/auth/hooks/useAuth.ts
+import { useState, useCallback } from "react";
 
-import { useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/stores/authStore';
-import * as authApi from '@/api/auth';
-import type { LoginCredentials, SignupCaregiverData, User } from '@/types/auth';
+export interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  // add other known user fields here
+}
 
-interface UseAuthReturn {
+type AuthReturn = {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
-  signup: (data: SignupCaregiverData) => Promise<{ success: boolean; error?: string }>;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => void;
-}
+  // add other actions as needed
+};
 
-/**
- * Custom hook for authentication operations
- * Handles login, signup, logout and state management
- */
-export function useAuth(): UseAuthReturn {
-  const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, setAuth, logout: storeLogout, initialize } = useAuthStore();
+export function useAuth(): AuthReturn {
+  const [user, setUser] = useState<User | null>({
+    name: "Demo User",
+    email: "demo@example.com",
+    role: "caregiver",
+  });
 
-  // Initialize auth state on mount
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
+  const login = useCallback(async (credentials: { email: string; password: string }) => {
+    // replace with real API call:
+    // const response = await auth.login(credentials)
+    // setUser(response.user)
+    console.log("login called", credentials.email);
+    // simulate
+    setUser({
+      id: "1",
+      name: "Demo User",
+      email: credentials.email,
+      role: "caregiver",
+    });
+  }, []);
 
-  /**
-   * Login with email and password
-   */
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    try {
-      const response = await authApi.login(credentials);
-      setAuth(response.token, response.user);
-      return { success: true };
-    } catch (error: any) {
-      const message = error?.message || 'Login failed. Please try again.';
-      return { success: false, error: message };
-    }
-  }, [setAuth]);
-
-  /**
-   * Register new caregiver account
-   */
-  const signup = useCallback(async (data: SignupCaregiverData) => {
-    try {
-      const response = await authApi.signupCaregiver(data);
-      setAuth(response.token, response.user);
-      return { success: true };
-    } catch (error: any) {
-      const message = error?.message || 'Registration failed. Please try again.';
-      return { success: false, error: message };
-    }
-  }, [setAuth]);
-
-  /**
-   * Logout and redirect to login page
-   */
   const logout = useCallback(() => {
-    storeLogout();
-    navigate('/login');
-  }, [storeLogout, navigate]);
+    // clear session
+    setUser(null);
+  }, []);
 
-  return {
-    user,
-    isAuthenticated,
-    isLoading,
-    login,
-    signup,
-    logout
-  };
+  return { user, login, logout };
 }
+
 
