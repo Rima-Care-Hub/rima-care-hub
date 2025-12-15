@@ -18,13 +18,13 @@ export class AuthService {
         const passwordMatches = await bcrypt.compare(pass, user.password || '');
         if (user && passwordMatches) {
             // It's important that the 'role' property is included in the returned object
-            const { password: _password, ...result } = user;
+            const { password, ...result } = user;
             return result as { id: number, username: string, role: string}; 
         }
         return null;
     }
 
-    async login(user: { username: string, id: number, role: string}) {
+    login(user: { username: string, id: number, role: string}) {
         const payload = { 
             username: user.username, 
             sub: user.id,

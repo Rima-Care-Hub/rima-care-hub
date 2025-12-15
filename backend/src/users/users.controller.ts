@@ -35,6 +35,8 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.admin)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
     return this.usersService.findOne(id);

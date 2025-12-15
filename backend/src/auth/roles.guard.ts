@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from './roles';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { Request as ExpressRequest } from 'express';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -22,8 +23,7 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        // Get the user object (provided by the JWTStrategy)
-        const { user } = context.switchToHttp().getRequest();
+        const { user } = context.switchToHttp().getRequest<ExpressRequest & { user?: { role?: UserRole } }>();
 
         if (!user || !user.role) {
             throw new ForbiddenException('User role information missing.');
