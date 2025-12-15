@@ -22,7 +22,7 @@ export class AuthController {
     @Public()
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async signIn(@Request() req: ExpressRequest & { user: { username: string, id: number, role: string}}) {
+    signIn(@Request() req: ExpressRequest & { user: { username: string, id: number, role: string}}) {
         return this.authService.login(req.user);
     }
 

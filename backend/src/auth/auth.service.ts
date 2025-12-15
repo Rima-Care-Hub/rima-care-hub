@@ -11,15 +11,12 @@ export class AuthService {
     ) {}
 
     async validateUser(username: string, pass: string): Promise<any> {
-        // Assume findByUsername returns a User entity that includes the 'role' property
         const user = await this.usersService.findByUsername(username); 
         if (!user) return null;
 
         const passwordMatches = await bcrypt.compare(pass, user.password || '');
         if (user && passwordMatches) {
-            // It's important that the 'role' property is included in the returned object
-            const { password, ...result } = user;
-            return result as { id: number, username: string, role: string}; 
+            return { id: user.id, username: user.username, role: user.role}; 
         }
         return null;
     }
