@@ -1,6 +1,5 @@
-
 import { DataSource } from 'typeorm';
-import { User } from './users/entities/user.entity'; // Import any entity needed for the scan
+import { User } from './users/entities/user.entity'; 
 
 export const AppDataSource = new DataSource({
     type: 'postgres',

@@ -17,8 +17,7 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.admin)
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -29,7 +28,8 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.admin)
   @Get()
   findAll(): Promise<User[]> {
     return this.usersService.findAll();

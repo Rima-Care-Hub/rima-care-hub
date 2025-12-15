@@ -1,4 +1,4 @@
-import { IsString, MinLength, IsOptional } from 'class-validator';
+import { IsString } from 'class-validator';
 export class SignIn {
     @IsString()
     username: string;

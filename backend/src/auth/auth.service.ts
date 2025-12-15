@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -18,13 +18,13 @@ export class AuthService {
         const passwordMatches = await bcrypt.compare(pass, user.password || '');
         if (user && passwordMatches) {
             // It's important that the 'role' property is included in the returned object
-            const { password, ...result } = user;
-            return result; 
+            const { password: _password, ...result } = user;
+            return result as { id: number, username: string, role: string}; 
         }
         return null;
     }
 
-    async login(user: any) {
+    async login(user: { username: string, id: number, role: string}) {
         const payload = { 
             username: user.username, 
             sub: user.id,
