@@ -1,0 +1,27 @@
+@import "./theme.css";
+@import "./components.css";
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text-high);
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.page {
+    padding: var(--space-lg);
+}
+
+.container {
+    max-width: 960px;
+    margin: auto;
+}
