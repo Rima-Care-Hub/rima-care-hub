@@ -204,8 +204,8 @@ const DashboardPage = ({ session }) => {
         }
       }
     } catch (e) {
-      // minimal UX for dev-only button
-      alert('Failed to start payment session');
+      console.error(e);
+      alert(`Failed to start payment session: ${e.message}`);
     }
   };
 
