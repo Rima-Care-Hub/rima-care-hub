@@ -23,11 +23,21 @@ describe('Payments (e2e)', () => {
   it('/payments/session (POST) returns mock authorization url', async () => {
     const res = await request(app.getHttpServer())
       .post('/payments/session')
-      .send({ amount_minor: 50000, sellerType: 'agency', sellerId: 'test-agency-1' })
+      .send({
+        amount_minor: 50000,
+        sellerType: 'agency',
+        sellerId: 'test-agency-1',
+      })
       .expect(200);
 
-    expect(res.body).toHaveProperty('reference');
-    expect(res.body).toHaveProperty('authorization_url');
-    expect(res.body.status).toBe('pending');
+    const body = res.body as {
+      reference: string;
+      authorization_url: string;
+      status: string;
+    };
+
+    expect(body).toHaveProperty('reference');
+    expect(body).toHaveProperty('authorization_url');
+    expect(body.status).toBe('pending');
   });
 });

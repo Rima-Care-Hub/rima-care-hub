@@ -11,7 +11,9 @@ export type ListTransactionsParams = {
 export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async listTransactions(params: ListTransactionsParams): Promise<Transaction[]> {
+  async listTransactions(
+    params: ListTransactionsParams,
+  ): Promise<Transaction[]> {
     const limit = params.limit ?? 20;
     const take = Math.min(Math.max(limit, 1), 100);
 

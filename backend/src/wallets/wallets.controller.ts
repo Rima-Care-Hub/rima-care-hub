@@ -17,8 +17,14 @@ export class WalletsController {
     @Param('ownerId') ownerId: string,
   ) {
     const ownerType = normalizeOwnerTypeParam(ownerTypeParam);
-    const result = await this.wallets.getWalletWithSummary(ownerType, ownerId, 'NGN');
-    const payouts = await this.wallets.listPayoutRequestsForWallet(result.wallet.id);
+    const result = await this.wallets.getWalletWithSummary(
+      ownerType,
+      ownerId,
+      'NGN',
+    );
+    const payouts = await this.wallets.listPayoutRequestsForWallet(
+      result.wallet.id,
+    );
 
     return {
       wallet: result.wallet,
@@ -33,7 +39,11 @@ export class WalletsController {
     @Param('ownerId') ownerId: string,
   ) {
     const ownerType = normalizeOwnerTypeParam(ownerTypeParam);
-    const { wallet } = await this.wallets.getWalletWithSummary(ownerType, ownerId, 'NGN');
+    const { wallet } = await this.wallets.getWalletWithSummary(
+      ownerType,
+      ownerId,
+      'NGN',
+    );
     const payouts = await this.wallets.listPayoutRequestsForWallet(wallet.id);
     return { walletId: wallet.id, payouts };
   }

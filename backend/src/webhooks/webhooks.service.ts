@@ -1,9 +1,31 @@
-import { Injectable } from '@nestjs/common'
-import * as crypto from 'crypto'
-import { PaymentStatus, Prisma, SellerType, TransactionStatus } from '@prisma/client'
-import { PrismaService } from '../prisma/prisma.service'
-import { CommissionService } from '../payments/commission.service'
-import { WalletsService } from '../wallets/wallets.service'
+import { Injectable } from '@nestjs/common';
+import * as crypto from 'crypto';
+import {
+  PaymentStatus,
+  Prisma,
+  SellerType,
+  TransactionStatus,
+} from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { CommissionService } from '../payments/commission.service';
+import { WalletsService } from '../wallets/wallets.service';
+
+type PaystackWebhookData = {
+  id?: string | number;
+  reference?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  metadata?: {
+    sellerType?: string;
+    sellerId?: string;
+  } & Record<string, unknown>;
+} & Record<string, unknown>;
+
+type PaystackWebhookPayload = {
+  event?: string;
+  data?: PaystackWebhookData;
+} & Record<string, unknown>;
 
 @Injectable()
 export class WebhooksService {
@@ -13,32 +35,41 @@ export class WebhooksService {
     private readonly wallets: WalletsService,
   ) {}
 
-  async handlePaystackWebhook(headers: Record<string, string>, body: any) {
-    const secret = process.env.PAYSTACK_SECRET_KEY
+  async handlePaystackWebhook(
+    headers: Record<string, string>,
+    body: PaystackWebhookPayload,
+  ) {
+    const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) {
-      return { ok: false, reason: 'paystack_secret_not_configured' }
+      return { ok: false, reason: 'paystack_secret_not_configured' };
     }
 
     const signature =
       headers['x-paystack-signature'] ||
       headers['X-Paystack-Signature'] ||
       (headers['x-Paystack-Signature'] as string | undefined) ||
-      ''
+      '';
 
-    const payload = JSON.stringify(body ?? {})
-    const expected = crypto.createHmac('sha512', secret).update(payload).digest('hex')
+    const payload = JSON.stringify(body ?? {});
+    const expected = crypto
+      .createHmac('sha512', secret)
+      .update(payload)
+      .digest('hex');
 
     if (!signature || signature !== expected) {
       // Ignore silently but return ok=false so we can inspect logs if needed
-      return { ok: false, ignored: true, reason: 'invalid_signature' }
+      return { ok: false, ignored: true, reason: 'invalid_signature' };
     }
 
-    const eventType = (body?.event as string) ?? 'unknown'
-    const data = body?.data ?? {}
-    const reference = (data?.reference as string | undefined) ?? null
+    const eventType = body.event ?? 'unknown';
+    const data: PaystackWebhookData = body.data ?? {};
+    const reference = data.reference ?? null;
 
-    const uniqueKey = `${eventType}:${data?.id ?? reference ?? ''}`
-    const hash = crypto.createHash('sha256').update(uniqueKey || payload).digest('hex')
+    const uniqueKey = `${eventType}:${data.id ?? reference ?? ''}`;
+    const hash = crypto
+      .createHash('sha256')
+      .update(uniqueKey || payload)
+      .digest('hex');
 
     // Idempotency: store webhook event; if duplicate hash, just return
     try {
@@ -47,48 +78,55 @@ export class WebhooksService {
           provider: 'paystack',
           eventType,
           signature,
-          body,
+          body: body as unknown as Prisma.InputJsonValue,
           hash,
         },
-      })
+      });
     } catch (e: any) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        return { ok: true, duplicate: true }
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        return { ok: true, duplicate: true };
       }
-      throw e
+      throw e;
     }
 
     if (!reference) {
-      return { ok: true, processed: false, reason: 'no_reference' }
+      return { ok: true, processed: false, reason: 'no_reference' };
     }
 
-    const amountMinor = typeof data.amount === 'number' ? data.amount : 0
-    const currency = (data.currency as string | undefined) ?? 'NGN'
-    const metadata = (data.metadata as any) ?? {}
+    const amountMinor = typeof data.amount === 'number' ? data.amount : 0;
+    const currency = data.currency ?? 'NGN';
+    const metadata = (data.metadata ?? {}) as {
+      sellerType?: string;
+      sellerId?: string;
+    } & Record<string, unknown>;
 
-    const sellerTypeRaw = (metadata.sellerType as string | undefined) === 'caregiver' ? 'caregiver' : 'agency'
-    const sellerType = sellerTypeRaw as SellerType
-    const sellerId = (metadata.sellerId as string | undefined) ?? 'unknown'
+    const sellerTypeRaw =
+      metadata.sellerType === 'caregiver' ? 'caregiver' : 'agency';
+    const sellerType = sellerTypeRaw as SellerType;
+    const sellerId = metadata.sellerId ?? 'unknown';
 
-    const statusRaw = (data.status as string | undefined) ?? ''
+    const statusRaw = data.status ?? '';
     const txStatus: TransactionStatus =
       statusRaw === 'success'
         ? TransactionStatus.success
         : statusRaw === 'failed'
-        ? TransactionStatus.failed
-        : TransactionStatus.pending
+          ? TransactionStatus.failed
+          : TransactionStatus.pending;
 
     const paymentStatus: PaymentStatus =
       statusRaw === 'success'
         ? PaymentStatus.paid
         : statusRaw === 'failed'
-        ? PaymentStatus.failed
-        : PaymentStatus.pending
+          ? PaymentStatus.failed
+          : PaymentStatus.pending;
 
     const commission =
       txStatus === TransactionStatus.success && amountMinor > 0
         ? this.commission.compute(amountMinor)
-        : { grossMinor: amountMinor, feeMinor: 0, netMinor: 0 }
+        : { grossMinor: amountMinor, feeMinor: 0, netMinor: 0 };
 
     await this.prisma.paymentSession.upsert({
       where: { reference },
@@ -99,7 +137,7 @@ export class WebhooksService {
         sellerType,
         sellerId,
         status: paymentStatus,
-        metadata,
+        metadata: metadata as unknown as Prisma.InputJsonValue,
         provider: 'paystack',
       },
       update: {
@@ -108,9 +146,9 @@ export class WebhooksService {
         sellerType,
         sellerId,
         status: paymentStatus,
-        metadata,
+        metadata: metadata as unknown as Prisma.InputJsonValue,
       },
-    })
+    });
 
     const tx = await this.prisma.transaction.upsert({
       where: { reference },
@@ -134,7 +172,7 @@ export class WebhooksService {
         sellerId,
         status: txStatus,
       },
-    })
+    });
 
     if (txStatus === TransactionStatus.success) {
       await this.wallets.applyPaymentSettlement({
@@ -144,9 +182,9 @@ export class WebhooksService {
         currency,
         platformFeeMinor: commission.feeMinor,
         netAmountMinor: commission.netMinor,
-      })
+      });
     }
 
-    return { ok: true, processed: true }
+    return { ok: true, processed: true };
   }
 }

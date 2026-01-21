@@ -14,7 +14,9 @@ export type OwnerTypeInput = 'platform' | 'agency' | 'caregiver';
 export class WalletsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private normalizeOwnerType(ownerType: WalletOwnerType | SellerType | OwnerTypeInput): WalletOwnerType {
+  private normalizeOwnerType(
+    ownerType: WalletOwnerType | SellerType | OwnerTypeInput,
+  ): WalletOwnerType {
     const raw = String(ownerType);
 
     if (raw === 'platform') {
@@ -60,7 +62,14 @@ export class WalletsService {
     platformFeeMinor: number;
     netAmountMinor: number;
   }): Promise<void> {
-    const { transactionId, sellerType, sellerId, currency, platformFeeMinor, netAmountMinor } = args;
+    const {
+      transactionId,
+      sellerType,
+      sellerId,
+      currency,
+      platformFeeMinor,
+      netAmountMinor,
+    } = args;
 
     await this.prisma.$transaction(async (tx) => {
       if (platformFeeMinor > 0) {
@@ -101,7 +110,9 @@ export class WalletsService {
 
       if (netAmountMinor > 0) {
         const ownerType =
-          sellerType === SellerType.caregiver ? WalletOwnerType.caregiver : WalletOwnerType.agency;
+          sellerType === SellerType.caregiver
+            ? WalletOwnerType.caregiver
+            : WalletOwnerType.agency;
 
         const sellerWallet = await tx.wallet.upsert({
           where: {
@@ -165,7 +176,9 @@ export class WalletsService {
     };
   }
 
-  async listPayoutRequestsForWallet(walletId: string): Promise<PayoutRequest[]> {
+  async listPayoutRequestsForWallet(
+    walletId: string,
+  ): Promise<PayoutRequest[]> {
     return this.prisma.payoutRequest.findMany({
       where: { walletId },
       orderBy: { requestedAt: 'desc' },
@@ -184,10 +197,16 @@ export class WalletsService {
       throw new BadRequestException('amountMinor must be a positive integer');
     }
 
-    const { wallet } = await this.getWalletWithSummary(ownerType, ownerId, currency);
+    const { wallet } = await this.getWalletWithSummary(
+      ownerType,
+      ownerId,
+      currency,
+    );
 
     if (amountMinor > wallet.balanceMinor) {
-      throw new BadRequestException('amountMinor exceeds available wallet balance');
+      throw new BadRequestException(
+        'amountMinor exceeds available wallet balance',
+      );
     }
 
     return this.prisma.payoutRequest.create({

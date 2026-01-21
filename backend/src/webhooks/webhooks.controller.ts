@@ -1,4 +1,11 @@
-import { Body, Controller, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
 
 @Controller('webhooks')
@@ -7,7 +14,10 @@ export class WebhooksController {
 
   @Post('paystack')
   @HttpCode(HttpStatus.OK)
-  handlePaystack(@Headers() headers: Record<string, string>, @Body() body: unknown) {
+  handlePaystack(
+    @Headers() headers: Record<string, string>,
+    @Body() body: unknown,
+  ) {
     return this.webhooksService.handlePaystackWebhook(headers, body);
   }
 }
