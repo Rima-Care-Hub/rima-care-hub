@@ -10,7 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CommissionService } from '../payments/commission.service';
 import { WalletsService } from '../wallets/wallets.service';
 
-type PaystackWebhookData = {
+export type PaystackWebhookData = {
   id?: string | number;
   reference?: string;
   amount?: number;
@@ -22,7 +22,7 @@ type PaystackWebhookData = {
   } & Record<string, unknown>;
 } & Record<string, unknown>;
 
-type PaystackWebhookPayload = {
+export type PaystackWebhookPayload = {
   event?: string;
   data?: PaystackWebhookData;
 } & Record<string, unknown>;

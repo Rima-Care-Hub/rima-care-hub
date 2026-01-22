@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { WebhooksService } from './webhooks.service';
+import { WebhooksService, PaystackWebhookPayload } from './webhooks.service';
 
 @Controller('webhooks')
 export class WebhooksController {
@@ -16,7 +16,7 @@ export class WebhooksController {
   @HttpCode(HttpStatus.OK)
   handlePaystack(
     @Headers() headers: Record<string, string>,
-    @Body() body: unknown,
+    @Body() body: PaystackWebhookPayload,
   ) {
     return this.webhooksService.handlePaystackWebhook(headers, body);
   }
