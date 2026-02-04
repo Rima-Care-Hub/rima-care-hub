@@ -32,11 +32,9 @@ import { User } from './users/entities/user.entity';
           }),
         ]
       : []),
-    ...(process.env.DB_HOST ? [AuthModule, UsersModule] : []),
-    PaymentsModule,
-    WebhooksModule,
-    TransactionsModule,
-    WalletsModule,
+    ...(process.env.DB_HOST || process.env.DATABASE_URL
+      ? [AuthModule, UsersModule, PaymentsModule, WebhooksModule, TransactionsModule, WalletsModule]
+      : []),
   ],
   controllers: [AppController],
   providers: [AppService],
