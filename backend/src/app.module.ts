@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PaymentsModule } from './payments/payments.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { WalletsModule } from './wallets/wallets.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
-import { AppController } from './app.controller';
-
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -20,7 +26,13 @@ import { AppController } from './app.controller';
       synchronize: false,
       autoLoadEntities: true,
     }),
-    AuthModule, UsersModule],
+    AuthModule,
+    UsersModule,
+    PaymentsModule,
+    WebhooksModule,
+    TransactionsModule,
+    WalletsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
