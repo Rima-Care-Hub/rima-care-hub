@@ -1,11 +1,11 @@
 # RimaCare Hub — Backend (NestJS)
 
-NestJS service powering RimaCare Hub (agencies, caregivers, clients). Currently a scaffold with sample controller; DB/auth modules coming next.
+NestJS service powering RimaCare Hub (agencies, caregivers, clients). Full implementation with authentication, payments, wallets, and transactions.
 
 ## Requirements
 - Node 20+
 - npm
-- PostgreSQL (planned; not yet required)
+- PostgreSQL database
 
 ## Setup
 ```bash
@@ -24,27 +24,30 @@ npm run test        # unit (placeholder)
 npm run test:e2e    # e2e (placeholder)
 ```
 
-## Structure (scaffold)
-- `src/main.ts` — bootstrap
-- `src/app.module.ts` — root module
-- `src/app.controller.ts` — sample endpoint
-- `src/app.service.ts` — sample service
-- `test/` — e2e scaffold
-
-## TODO (next backend steps)
-- Add modules: auth (JWT), users (roles: admin/agency/caregiver), agencies, caregivers.
-- Add PostgreSQL integration (Prisma or TypeORM) + migrations.
-- Add validation pipes, global error filter.
-- Add basic payouts module interface (payout accounts/requests).
-- Add e2e tests for auth/login/current-user.
+## Structure
+- `src/main.ts` — bootstrap with CORS and validation pipes
+- `src/app.module.ts` — root module with all feature modules
+- `src/auth/` — JWT + Local authentication, role guards
+- `src/users/` — User management with TypeORM entities
+- `src/payments/` — Paystack payment integration
+- `src/wallets/` — Wallet management
+- `src/transactions/` — Transaction tracking
+- `src/webhooks/` — Webhook handling
+- `prisma/` — Prisma schema and migrations
+- `test/` — e2e tests
 
 ## Env
-See `.env.example`. Minimum:
+See `.env.example`. Required:
 ```
 PORT=3000
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/rimacare
-JWT_SECRET=please-change-me
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/rimacare_db
+JWT_SECRET=please-change-me-to-secure-random-string
 NODE_ENV=development
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=rimacare_db
 ```
 
 ## CI

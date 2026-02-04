@@ -59,6 +59,16 @@ GitHub Actions `.github/workflows/ci.yml` runs on push/PR to `main` and `dev`:
 4) Release to `main` via PR when approved.
 
 ## Current state
-- Backend scaffolded (NestJS) with sample controller; pending DB/auth modules.
-- Frontend has routed control-room shell with minimal auth gate and placeholder pages (Dashboard, Shifts, Patients, Settings).
+- **Backend**: Full NestJS implementation with:
+  - Authentication (JWT + Local strategy)
+  - User management with role-based access control
+  - Payments integration (Paystack)
+  - Wallets and transactions
+  - Webhooks handling
+  - TypeORM + Prisma for database
+- **Frontend**: React app with:
+  - Authentication flows (login, register, forgot password)
+  - Dashboard, Shifts, Patients, Settings pages
+  - API client with React Query
+  - Dark minimal UI design
 
