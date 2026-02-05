@@ -18,7 +18,7 @@ function clearSessionAndRedirect() {
 }
 
 export async function apiClient(path, options = {}) {
-  const { method = 'GET', headers, body, ...rest } = options
+  const { method = 'GET', headers, body, skipAuthRedirect = false, ...rest } = options
 
   const baseUrl = API_BASE_URL
   const url = path.startsWith('http') ? path : new URL(path, baseUrl).toString()
@@ -50,11 +50,6 @@ export async function apiClient(path, options = {}) {
     ...rest,
   })
 
-  if (response.status === 401) {
-    clearSessionAndRedirect()
-    throw new Error('Unauthorized')
-  }
-
   const contentType = response.headers.get('content-type') || ''
 
   let data
@@ -62,6 +57,16 @@ export async function apiClient(path, options = {}) {
     data = await response.json()
   } else {
     data = await response.text()
+  }
+
+  if (response.status === 401) {
+    if (!skipAuthRedirect) {
+      clearSessionAndRedirect()
+    }
+    const error = new Error('Unauthorized')
+    error.status = response.status
+    error.data = data
+    throw error
   }
 
   if (!response.ok) {

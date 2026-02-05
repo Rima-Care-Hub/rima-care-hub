@@ -16,6 +16,7 @@ import { useCreatePaymentSession } from './hooks/useCreatePaymentSession';
 import { useTransactions } from './hooks/useTransactions';
 import { useWallet } from './hooks/useWallet';
 import { useCreatePayoutRequest } from './hooks/useCreatePayoutRequest';
+import { apiClient } from './lib/apiClient';
 
 const navLinks = [
   { label: 'Dashboard', path: '/dashboard' },
@@ -87,11 +88,28 @@ const Shell = ({ session, onLogout }) => {
 const LoginPage = ({ onLogin, session }) => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onLogin(form);
-    navigate('/dashboard', { replace: true });
+    setError('');
+    setSubmitting(true);
+    try {
+      await onLogin(form);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      const status = err?.status;
+      if (status === 401) {
+        setError('Invalid email or password.');
+      } else if (status && status >= 500) {
+        setError('Service unavailable. Please try again later.');
+      } else {
+        setError('Unable to sign in. Please check your details and try again.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (session) return <Navigate to="/dashboard" replace />;
@@ -107,7 +125,7 @@ const LoginPage = ({ onLogin, session }) => {
         <p className="subtle">Enter your workspace email to continue.</p>
         <form className="form" onSubmit={handleSubmit}>
           <label className="label">
-            Email
+            Email or username
             <input
               className="input"
               type="email"
@@ -128,8 +146,13 @@ const LoginPage = ({ onLogin, session }) => {
               placeholder="••••••••"
             />
           </label>
-          <button type="submit" className="primary-button">
-            Continue
+          {error && (
+            <div style={{ color: '#f97373', fontSize: 13, marginTop: 8 }}>
+              {error}
+            </div>
+          )}
+          <button type="submit" className="primary-button" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Continue'}
           </button>
         </form>
         <p className="microcopy">Access is limited to authorized team members.</p>
@@ -298,7 +321,13 @@ const DashboardPage = ({ session }) => {
         <div className="panel-title">Wallet (dev-agency-1)</div>
         <div className="panel-body">
           {walletLoading && <div>Loading wallet...</div>}
-          {walletError && <div>Unable to load wallet.</div>}
+          {walletError && (
+            <div>
+              {walletError.status === 404 || walletError.status === 503
+                ? 'Finance data not configured yet.'
+                : 'Unable to load wallet.'}
+            </div>
+          )}
           {!walletLoading && !walletError && wallet && (
             <>
               <div className="stat-pill">
@@ -365,7 +394,13 @@ const DashboardPage = ({ session }) => {
         <div className="panel-title">Recent transactions</div>
         <div className="panel-body">
           {txLoading && <div>Loading transactions...</div>}
-          {txError && <div>Unable to load transactions.</div>}
+          {txError && (
+            <div>
+              {txError.status === 404 || txError.status === 503
+                ? 'Finance data not configured yet.'
+                : 'Unable to load transactions.'}
+            </div>
+          )}
           {!txLoading && !txError && (
             <div className="list">
               {(transactions?.data ?? []).map((t) => (
@@ -498,14 +533,32 @@ const App = () => {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const handleLogin = (form) => {
+  const handleLogin = async (form) => {
+    const result = await apiClient('/auth/login', {
+      method: 'POST',
+      body: {
+        username: form.email,
+        password: form.password,
+      },
+      skipAuthRedirect: true,
+    });
+
+    const token = result?.access_token;
+    if (!token) {
+      const error = new Error('Login did not return a token');
+      error.status = 500;
+      throw error;
+    }
+
     const next = {
-      token: 'dev-token',
+      token,
       user: {
-        name: 'Rima Admin',
+        // we only have the identifier the user entered; this matches useCurrentUser needs
+        name: form.email,
         email: form.email,
       },
     };
+
     localStorage.setItem('rc-session', JSON.stringify(next));
     setSession(next);
   };
