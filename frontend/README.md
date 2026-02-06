@@ -26,12 +26,14 @@ npm run dev
 - `src/index.css` — global styles (dark UI)
 
 ## Routing & auth
-- Public: `/login`
+- Public: `/login`, `/register`, `/forgot-password`
 - Protected: `/dashboard`, `/shifts`, `/patients`, `/settings`
-- Simple localStorage session (`rc-session`) with email/token placeholder; redirects to login when missing.
+- Session management via localStorage (`rc-session`)
+- API client with React Query hooks for data fetching
 
-## TODO (next frontend steps)
-- Hook API client + React Query to real backend endpoints.
-- Build full auth flows (login/signup/forgot) and validation.
-- Flesh out Shifts/Patients data views with filters and pagination.
-- Add settings/profile edit, theme tokens, responsiveness polish.
+## Features
+- Authentication flows (login, register, forgot password)
+- API client with automatic token handling
+- React Query hooks for data fetching
+- Dashboard with stats and alerts
+- Shifts and Patients management pages
