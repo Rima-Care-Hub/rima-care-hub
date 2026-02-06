@@ -99,13 +99,15 @@ const LoginPage = ({ onLogin, session }) => {
       await onLogin(form);
       navigate('/dashboard', { replace: true });
     } catch (err) {
+      console.error('Login error:', err);
       const status = err?.status;
+      const data = err?.data;
       if (status === 401) {
         setError('Invalid email or password.');
       } else if (status && status >= 500) {
         setError('Service unavailable. Please try again later.');
       } else {
-        setError('Unable to sign in. Please check your details and try again.');
+        setError(`Unable to sign in. Please check your details and try again. (${status ?? 'network'})`);
       }
     } finally {
       setSubmitting(false);
@@ -128,11 +130,11 @@ const LoginPage = ({ onLogin, session }) => {
             Email or username
             <input
               className="input"
-              type="email"
+              type="text"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               required
-              placeholder="you@example.com"
+              placeholder="you@example.com or admin"
             />
           </label>
           <label className="label">
@@ -147,7 +149,7 @@ const LoginPage = ({ onLogin, session }) => {
             />
           </label>
           {error && (
-            <div style={{ color: '#f97373', fontSize: 13, marginTop: 8 }}>
+            <div className="error-message" style={{ marginTop: 8 }}>
               {error}
             </div>
           )}
@@ -237,19 +239,19 @@ const DashboardPage = ({ session }) => {
       {
         title: 'Active shifts',
         value: shifts ? String(shifts.length) : '—',
-        hint: 'Today (mock)',
+        hint: shifts?.length ? 'Today (mock)' : 'No shifts yet',
       },
       {
         title: 'Open requests',
         value: shifts
           ? String(shifts.filter((item) => item.status === 'pending').length)
           : '—',
-        hint: 'Pending dispatch',
+        hint: shifts?.length ? 'Pending dispatch' : 'No requests yet',
       },
       {
         title: 'Patients',
         value: patients ? String(patients.length) : '—',
-        hint: 'Monitored',
+        hint: patients?.length ? 'Monitored' : 'No patients yet',
       },
     ],
     [shifts, patients]
@@ -324,7 +326,7 @@ const DashboardPage = ({ session }) => {
           {walletError && (
             <div>
               {walletError.status === 404 || walletError.status === 503
-                ? 'Finance data not configured yet.'
+                ? 'Coming soon: Finance module not configured yet.'
                 : 'Unable to load wallet.'}
             </div>
           )}
@@ -397,7 +399,7 @@ const DashboardPage = ({ session }) => {
           {txError && (
             <div>
               {txError.status === 404 || txError.status === 503
-                ? 'Finance data not configured yet.'
+                ? 'Coming soon: Finance module not configured yet.'
                 : 'Unable to load transactions.'}
             </div>
           )}
@@ -462,6 +464,7 @@ const ShiftsPage = () => {
             <button className="ghost-button">Open</button>
           </div>
         ))}
+        {!shifts?.length && <div>No shifts yet.</div>}
       </div>
     </div>
   );
@@ -501,6 +504,7 @@ const PatientsPage = () => {
             <div className="badge subtle">Monitored</div>
           </div>
         ))}
+        {!patients?.length && <div>No patients yet.</div>}
       </div>
     </div>
   );

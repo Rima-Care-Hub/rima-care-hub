@@ -15,15 +15,19 @@ import { User } from './users/entities/user.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ...(process.env.DB_HOST
+    ...(process.env.DB_HOST || process.env.DATABASE_URL
       ? [
           TypeOrmModule.forRoot({
             type: 'postgres',
-            host: process.env.DB_HOST,
-            port: parseInt(process.env.DB_PORT || '5432', 10),
-            username: process.env.DB_USERNAME || 'postgres',
-            password: process.env.DB_PASSWORD || 'postgres',
-            database: process.env.DB_DATABASE || 'rimacare_db',
+            ...(process.env.DATABASE_URL
+              ? { url: process.env.DATABASE_URL }
+              : {
+                  host: process.env.DB_HOST,
+                  port: parseInt(process.env.DB_PORT || '5432', 10),
+                  username: process.env.DB_USERNAME || 'postgres',
+                  password: process.env.DB_PASSWORD || 'postgres',
+                  database: process.env.DB_DATABASE || 'rimacare_db',
+                }),
             entities: [User],
             synchronize: process.env.NODE_ENV === 'development',
             autoLoadEntities: true,
@@ -31,9 +35,18 @@ import { User } from './users/entities/user.entity';
             retryDelay: 0,
           }),
         ]
-      : []),
+      : [
+          TypeOrmModule.forRoot({
+            type: 'sqlite',
+            database: ':memory:',
+            entities: [User],
+            synchronize: true,
+          }),
+        ]),
+    AuthModule,
+    UsersModule,
     ...(process.env.DB_HOST || process.env.DATABASE_URL
-      ? [AuthModule, UsersModule, PaymentsModule, WebhooksModule, TransactionsModule, WalletsModule]
+      ? [PaymentsModule, WebhooksModule, TransactionsModule, WalletsModule]
       : []),
   ],
   controllers: [AppController],
