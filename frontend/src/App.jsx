@@ -101,7 +101,6 @@ const LoginPage = ({ onLogin, session }) => {
     } catch (err) {
       console.error('Login error:', err);
       const status = err?.status;
-      const data = err?.data;
       if (status === 401) {
         setError('Invalid email or password.');
       } else if (status && status >= 500) {
