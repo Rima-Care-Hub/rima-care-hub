@@ -37,7 +37,14 @@ import { User } from './users/entities/user.entity';
         ]
       : []),
     ...(process.env.DB_HOST || process.env.DATABASE_URL
-      ? [AuthModule, UsersModule, PaymentsModule, WebhooksModule, TransactionsModule, WalletsModule]
+      ? [
+          AuthModule,
+          UsersModule,
+          PaymentsModule,
+          WebhooksModule,
+          TransactionsModule,
+          WalletsModule,
+        ]
       : []),
   ],
   controllers: [AppController],
