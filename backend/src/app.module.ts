@@ -35,18 +35,16 @@ import { User } from './users/entities/user.entity';
             retryDelay: 0,
           }),
         ]
-      : [
-          TypeOrmModule.forRoot({
-            type: 'sqlite',
-            database: ':memory:',
-            entities: [User],
-            synchronize: true,
-          }),
-        ]),
-    AuthModule,
-    UsersModule,
+      : []),
     ...(process.env.DB_HOST || process.env.DATABASE_URL
-      ? [PaymentsModule, WebhooksModule, TransactionsModule, WalletsModule]
+      ? [
+          AuthModule,
+          UsersModule,
+          PaymentsModule,
+          WebhooksModule,
+          TransactionsModule,
+          WalletsModule,
+        ]
       : []),
   ],
   controllers: [AppController],
