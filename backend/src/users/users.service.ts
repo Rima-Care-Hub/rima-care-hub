@@ -51,6 +51,22 @@ export class UsersService {
         });
     }
 
+    findByEmail(email: string): Promise<User | null> {
+        return this.usersRepository.findOne({
+            where: { email },
+            select: [
+                'id',
+                'firstName',
+                'lastName',
+                'username',
+                'email',
+                'role',
+                'isActive',
+                'password' 
+            ]
+        });
+    }
+
     async remove(id: number): Promise<void> {
         await this.usersRepository.delete(id);
     }
