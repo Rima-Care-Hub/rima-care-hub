@@ -3,4 +3,3 @@ export enum WalletOwnerType {
   agency = 'agency',
   caregiver = 'caregiver',
 }
-

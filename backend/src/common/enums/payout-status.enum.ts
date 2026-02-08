@@ -4,4 +4,3 @@ export enum PayoutStatus {
   rejected = 'rejected',
   paid = 'paid',
 }
-

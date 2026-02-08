@@ -1,11 +1,10 @@
 import { IsString } from 'class-validator';
 export class SignIn {
-    @IsString()
-    username: string;
+  @IsString()
+  username: string;
 
-    email: string;
+  email: string;
 
-
-    @IsString()
-    password: string;
+  @IsString()
+  password: string;
 }

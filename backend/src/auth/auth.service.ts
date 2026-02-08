@@ -6,34 +6,34 @@ import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private usersService: UsersService,
-        private jwtService: JwtService
-    ) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-    async validateUser(username: string, pass: string): Promise<User | null> {
-        let user = await this.usersService.findByUsername(username);
-        if (!user) {
-            user = await this.usersService.findByEmail(username);
-        }
-        if (!user) return null;
-
-        const passwordMatches = await bcrypt.compare(pass, user.password || '');
-        if (user && passwordMatches) {
-            return { id: user.id, username: user.username, role: user.role}; 
-        }
-        return null;
+  async validateUser(username: string, pass: string): Promise<User | null> {
+    let user = await this.usersService.findByUsername(username);
+    if (!user) {
+      user = await this.usersService.findByEmail(username);
     }
+    if (!user) return null;
 
-    login(user: User) {
-        const payload = { 
-            username: user.username, 
-            sub: user.id,
-            role: user.role
-        };
-        
-        return {
-            access_token: this.jwtService.sign(payload),
-        }
+    const passwordMatches = await bcrypt.compare(pass, user.password || '');
+    if (user && passwordMatches) {
+      return { id: user.id, username: user.username, role: user.role };
     }
+    return null;
+  }
+
+  login(user: User) {
+    const payload = {
+      username: user.username,
+      sub: user.id,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 }
