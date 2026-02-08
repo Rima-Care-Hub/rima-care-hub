@@ -6,7 +6,7 @@ import {
   Param,
   Post,
   ParseIntPipe,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -40,7 +40,6 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
     return this.usersService.findOne(id);
-    
   }
 
   @Delete(':id')
@@ -48,4 +47,3 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 }
-
