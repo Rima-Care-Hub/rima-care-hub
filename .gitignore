@@ -20,6 +20,11 @@ build
 frontend/dist
 backend/dist
 
+# Database files
+*.sqlite
+*.sqlite3
+database.sqlite
+
 # Logs
 logs
 *.log

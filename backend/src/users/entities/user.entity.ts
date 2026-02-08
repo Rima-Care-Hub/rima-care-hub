@@ -3,31 +3,30 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    firstName: string;
+  @Column()
+  firstName: string;
 
-    @Column()
-    lastName: string;
+  @Column()
+  lastName: string;
 
-    @Column({ unique: true })
-    username: string;
+  @Column({ unique: true })
+  username: string;
 
-    @Column({ unique: true })
-    email: string;
+  @Column({ unique: true })
+  email: string;
 
-    @Column({ select: false})
-    password: string;
+  @Column({ select: false })
+  password: string;
 
-    @Column({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.caregiver,
-    })
-    role: UserRole;
+  @Column({
+    type: 'varchar',
+    default: UserRole.caregiver,
+  })
+  role: UserRole;
 
-    @Column({ default: true })
-    isActive: boolean;
+  @Column({ default: true })
+  isActive: boolean;
 }

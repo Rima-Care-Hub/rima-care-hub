@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import {
-  PaymentStatus,
-  Prisma,
-  SellerType,
-  TransactionStatus,
-} from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommissionService } from '../payments/commission.service';
 import { WalletsService } from '../wallets/wallets.service';
+import { PaymentStatus } from '../common/enums/payment-status.enum';
+import { SellerType } from '../common/enums/seller-type.enum';
+import { TransactionStatus } from '../common/enums/transaction-status.enum';
 
 export type PaystackWebhookData = {
   id?: string | number;
@@ -78,7 +76,7 @@ export class WebhooksService {
           provider: 'paystack',
           eventType,
           signature,
-          body: body as unknown as Prisma.InputJsonValue,
+          body: JSON.stringify(body),
           hash,
         },
       });
@@ -137,7 +135,7 @@ export class WebhooksService {
         sellerType,
         sellerId,
         status: paymentStatus,
-        metadata: metadata as unknown as Prisma.InputJsonValue,
+        metadata: JSON.stringify(metadata),
         provider: 'paystack',
       },
       update: {
@@ -146,7 +144,7 @@ export class WebhooksService {
         sellerType,
         sellerId,
         status: paymentStatus,
-        metadata: metadata as unknown as Prisma.InputJsonValue,
+        metadata: JSON.stringify(metadata),
       },
     });
 
