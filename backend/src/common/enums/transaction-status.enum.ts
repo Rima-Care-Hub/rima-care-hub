@@ -3,4 +3,3 @@ export enum TransactionStatus {
   success = 'success',
   failed = 'failed',
 }
-

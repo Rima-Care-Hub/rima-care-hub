@@ -17,7 +17,8 @@ import { User } from './users/entities/user.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: process.env.DATABASE_URL?.replace(/^file:/, '') || 'database.sqlite',
+      database:
+        process.env.DATABASE_URL?.replace(/^file:/, '') || 'database.sqlite',
       entities: [User],
       synchronize: process.env.NODE_ENV === 'development',
       autoLoadEntities: true,

@@ -325,7 +325,7 @@ const LoginPage = ({ onLogin, session }) => {
     setSubmitting(true);
     try {
       const role = await onLogin(form);
-      const target = redirectAfter ?? (role === 'admin' ? '/admin' : '/app/dashboard');
+      const target = role === 'admin' ? '/admin' : '/app/dashboard';
       navigate(target, { replace: true });
     } catch (err) {
       console.error('Login error:', err);
