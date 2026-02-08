@@ -1,8 +1,8 @@
 // Prisma schema for payments, sessions, and webhooks
-// Database: PostgreSQL
+// Database: SQLite
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -10,64 +10,36 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum PaymentStatus {
-  pending
-  paid
-  failed
-}
-
-enum TransactionStatus {
-  pending
-  success
-  failed
-}
-
-enum SellerType {
-  agency
-  caregiver
-}
-
-enum WalletOwnerType {
-  platform
-  agency
-  caregiver
-}
-
-enum PayoutStatus {
-  pending
-  approved
-  rejected
-  paid
-}
+// SQLite doesn't support enums, using String instead
 
 model PaymentSession {
-  id           String        @id @default(cuid())
-  reference    String        @unique
+  id           String   @id @default(cuid())
+  reference    String   @unique
   amountMinor  Int
-  currency     String        @default("NGN")
-  sellerType   SellerType
+  currency     String   @default("NGN")
+  sellerType   String   // agency | caregiver
   sellerId     String
-  status       PaymentStatus @default(pending)
-  metadata     Json?
-  provider     String        @default("paystack")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  status       String   @default("pending") // pending | paid | failed
+  metadata     String?  // JSON stored as TEXT
+  provider     String   @default("paystack")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Transaction {
-  id           String             @id @default(cuid())
-  reference    String             @unique
-  amountMinor  Int
-  platformFeeMinor Int             @default(0)
-  netAmountMinor   Int             @default(0)
-  currency     String             @default("NGN")
-  sellerType   SellerType
-  sellerId     String
-  status       TransactionStatus  @default(pending)
-  provider     String             @default("paystack")
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  ledgerEntries LedgerEntry[]
+  id              String         @id @default(cuid())
+  reference       String         @unique
+  amountMinor     Int
+  platformFeeMinor Int           @default(0)
+  netAmountMinor  Int            @default(0)
+  currency        String         @default("NGN")
+  sellerType      String         // agency | caregiver
+  sellerId        String
+  status          String         @default("pending") // pending | success | failed
+  provider        String         @default("paystack")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  ledgerEntries   LedgerEntry[]
 }
 
 model WebhookEvent {
@@ -75,21 +47,21 @@ model WebhookEvent {
   provider  String
   eventType String
   signature String?
-  body      Json?
+  body      String?  // JSON stored as TEXT
   hash      String   @unique
   createdAt DateTime @default(now())
 }
 
 model Wallet {
-  id           String          @id @default(cuid())
-  ownerType    WalletOwnerType
-  ownerId      String
-  currency     String          @default("NGN")
-  balanceMinor Int             @default(0)
-  ledgerEntries LedgerEntry[]
+  id             String          @id @default(cuid())
+  ownerType      String          // platform | agency | caregiver
+  ownerId        String
+  currency       String          @default("NGN")
+  balanceMinor   Int             @default(0)
+  ledgerEntries  LedgerEntry[]
   payoutRequests PayoutRequest[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@unique([ownerType, ownerId, currency])
 }
@@ -107,12 +79,12 @@ model LedgerEntry {
 }
 
 model PayoutRequest {
-  id          String       @id @default(cuid())
+  id          String   @id @default(cuid())
   walletId    String
-  wallet      Wallet       @relation(fields: [walletId], references: [id])
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
   amountMinor Int
-  status      PayoutStatus @default(pending)
-  requestedAt DateTime     @default(now())
+  status      String   @default("pending") // pending | approved | rejected | paid
+  requestedAt DateTime @default(now())
   processedAt DateTime?
-  createdAt   DateTime     @default(now())
+  createdAt   DateTime @default(now())
 }

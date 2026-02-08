@@ -1,12 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  PayoutRequest,
-  PayoutStatus,
-  SellerType,
-  Wallet,
-  WalletOwnerType,
-} from '@prisma/client';
+import { PayoutRequest, Wallet } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PayoutStatus } from '../common/enums/payout-status.enum';
+import { SellerType } from '../common/enums/seller-type.enum';
+import { WalletOwnerType } from '../common/enums/wallet-owner-type.enum';
 
 export type OwnerTypeInput = 'platform' | 'agency' | 'caregiver';
 

@@ -40,15 +40,18 @@ npm run test:e2e    # e2e (placeholder)
 See `.env.example`. Required:
 ```
 PORT=3000
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/rimacare_db
+DATABASE_URL=file:./database.sqlite
 JWT_SECRET=please-change-me-to-secure-random-string
 NODE_ENV=development
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_DATABASE=rimacare_db
 ```
+
+Optional — seed initial admin user (if all three are set):
+```
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@your-domain.com
+ADMIN_PASSWORD=your-secure-password
+```
+Do not commit `.env` or real credentials. Keep admin credentials in `.env` only.
 
 ## CI
 GitHub Actions runs lint/build on push/PR to main/dev (see root `.github/workflows/ci.yml`).
