@@ -27,6 +27,7 @@ export class TransactionsService {
       args.skip = 1;
     }
 
-    return this.prisma.transaction.findMany(args);
+    const client = this.prisma.getClient();
+    return client.transaction.findMany(args);
   }
 }

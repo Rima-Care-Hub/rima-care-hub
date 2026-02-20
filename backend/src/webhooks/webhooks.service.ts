@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { Prisma } from '@prisma/client';
+import {
+  PaymentStatus,
+  Prisma,
+  SellerType,
+  TransactionStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommissionService } from '../payments/commission.service';
 import { WalletsService } from '../wallets/wallets.service';
-import { PaymentStatus } from '../common/enums/payment-status.enum';
-import { SellerType } from '../common/enums/seller-type.enum';
-import { TransactionStatus } from '../common/enums/transaction-status.enum';
 
 export type PaystackWebhookData = {
   id?: string | number;
@@ -37,6 +39,7 @@ export class WebhooksService {
     headers: Record<string, string>,
     body: PaystackWebhookPayload,
   ) {
+    const prisma = this.prisma.getClient();
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) {
       return { ok: false, reason: 'paystack_secret_not_configured' };
@@ -71,7 +74,7 @@ export class WebhooksService {
 
     // Idempotency: store webhook event; if duplicate hash, just return
     try {
-      await this.prisma.webhookEvent.create({
+      await prisma.webhookEvent.create({
         data: {
           provider: 'paystack',
           eventType,
@@ -126,7 +129,7 @@ export class WebhooksService {
         ? this.commission.compute(amountMinor)
         : { grossMinor: amountMinor, feeMinor: 0, netMinor: 0 };
 
-    await this.prisma.paymentSession.upsert({
+    await prisma.paymentSession.upsert({
       where: { reference },
       create: {
         reference,
@@ -148,7 +151,7 @@ export class WebhooksService {
       },
     });
 
-    const tx = await this.prisma.transaction.upsert({
+    const tx = await prisma.transaction.upsert({
       where: { reference },
       create: {
         reference,

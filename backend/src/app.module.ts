@@ -11,20 +11,33 @@ import { WalletsModule } from './wallets/wallets.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
+import { isDbEnabled } from './common/db';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database:
-        process.env.DATABASE_URL?.replace(/^file:/, '') || 'database.sqlite',
-      entities: [User],
-      synchronize: process.env.NODE_ENV === 'development',
-      autoLoadEntities: true,
-    }),
-    AuthModule,
-    UsersModule,
+    ...(isDbEnabled()
+      ? [
+          TypeOrmModule.forRoot({
+            type: 'postgres',
+            ...(process.env.DATABASE_URL
+              ? { url: process.env.DATABASE_URL }
+              : {
+                  host: process.env.DB_HOST,
+                  port: parseInt(process.env.DB_PORT || '5432', 10),
+                  username: process.env.DB_USERNAME || 'postgres',
+                  password: process.env.DB_PASSWORD || 'postgres',
+                  database: process.env.DB_DATABASE || 'rimacare_db',
+                }),
+            entities: [User],
+            synchronize: process.env.NODE_ENV === 'development',
+            autoLoadEntities: true,
+            retryAttempts: 0,
+            retryDelay: 0,
+          }),
+        ]
+      : []),
+    ...(isDbEnabled() ? [AuthModule, UsersModule] : []),
     PaymentsModule,
     WebhooksModule,
     TransactionsModule,

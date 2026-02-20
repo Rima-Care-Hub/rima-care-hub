@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { seedUser } from './users/seed';
+import { isDbEnabled } from './common/db';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,9 +19,10 @@ async function bootstrap() {
     }),
   );
 
-  // Seed admin user if not exists
-  const dataSource = app.get(DataSource);
-  await seedUser(dataSource);
+  if (isDbEnabled()) {
+    const dataSource = app.get(DataSource);
+    await seedUser(dataSource);
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }
