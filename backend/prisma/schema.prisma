@@ -1,8 +1,5 @@
-// Prisma schema for payments, sessions, and webhooks
-// Database: SQLite
-
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -10,17 +7,45 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// SQLite doesn't support enums, using String instead
+enum SellerType {
+  agency
+  caregiver
+}
+
+enum WalletOwnerType {
+  platform
+  agency
+  caregiver
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum TransactionStatus {
+  pending
+  success
+  failed
+}
+
+enum PayoutStatus {
+  pending
+  approved
+  rejected
+  paid
+}
 
 model PaymentSession {
   id           String   @id @default(cuid())
   reference    String   @unique
   amountMinor  Int
   currency     String   @default("NGN")
-  sellerType   String   // agency | caregiver
+  sellerType   SellerType
   sellerId     String
-  status       String   @default("pending") // pending | paid | failed
-  metadata     String?  // JSON stored as TEXT
+  status       PaymentStatus   @default(pending)
+  metadata     String?
   provider     String   @default("paystack")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -33,9 +58,9 @@ model Transaction {
   platformFeeMinor Int           @default(0)
   netAmountMinor  Int            @default(0)
   currency        String         @default("NGN")
-  sellerType      String         // agency | caregiver
+  sellerType      SellerType
   sellerId        String
-  status          String         @default("pending") // pending | success | failed
+  status          TransactionStatus         @default(pending)
   provider        String         @default("paystack")
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -54,7 +79,7 @@ model WebhookEvent {
 
 model Wallet {
   id             String          @id @default(cuid())
-  ownerType      String          // platform | agency | caregiver
+  ownerType      WalletOwnerType
   ownerId        String
   currency       String          @default("NGN")
   balanceMinor   Int             @default(0)
@@ -83,7 +108,7 @@ model PayoutRequest {
   walletId    String
   wallet      Wallet   @relation(fields: [walletId], references: [id])
   amountMinor Int
-  status      String   @default("pending") // pending | approved | rejected | paid
+  status      PayoutStatus   @default(pending)
   requestedAt DateTime @default(now())
   processedAt DateTime?
   createdAt   DateTime @default(now())

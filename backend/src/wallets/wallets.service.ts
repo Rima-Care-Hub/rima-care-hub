@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PayoutRequest, Wallet } from '@prisma/client';
+import {
+  PayoutRequest,
+  PayoutStatus,
+  SellerType,
+  Wallet,
+  WalletOwnerType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { PayoutStatus } from '../common/enums/payout-status.enum';
-import { SellerType } from '../common/enums/seller-type.enum';
-import { WalletOwnerType } from '../common/enums/wallet-owner-type.enum';
 
 export type OwnerTypeInput = 'platform' | 'agency' | 'caregiver';
 
@@ -33,7 +36,8 @@ export class WalletsService {
     currency = 'NGN',
   ): Promise<Wallet> {
     const normalized = this.normalizeOwnerType(ownerType);
-    return this.prisma.wallet.upsert({
+    const client = this.prisma.getClient();
+    return client.wallet.upsert({
       where: {
         ownerType_ownerId_currency: {
           ownerType: normalized,
@@ -68,7 +72,8 @@ export class WalletsService {
       netAmountMinor,
     } = args;
 
-    await this.prisma.$transaction(async (tx) => {
+    const client = this.prisma.getClient();
+    await client.$transaction(async (tx) => {
       if (platformFeeMinor > 0) {
         const platformWallet = await tx.wallet.upsert({
           where: {
@@ -155,7 +160,8 @@ export class WalletsService {
   ) {
     const wallet = await this.getOrCreateWallet(ownerType, ownerId, currency);
 
-    const pendingPayoutTotal = await this.prisma.payoutRequest.aggregate({
+    const client = this.prisma.getClient();
+    const pendingPayoutTotal = await client.payoutRequest.aggregate({
       where: {
         walletId: wallet.id,
         status: PayoutStatus.pending,
@@ -176,7 +182,8 @@ export class WalletsService {
   async listPayoutRequestsForWallet(
     walletId: string,
   ): Promise<PayoutRequest[]> {
-    return this.prisma.payoutRequest.findMany({
+    const client = this.prisma.getClient();
+    return client.payoutRequest.findMany({
       where: { walletId },
       orderBy: { requestedAt: 'desc' },
     });
@@ -206,7 +213,8 @@ export class WalletsService {
       );
     }
 
-    return this.prisma.payoutRequest.create({
+    const client = this.prisma.getClient();
+    return client.payoutRequest.create({
       data: {
         walletId: wallet.id,
         amountMinor,
